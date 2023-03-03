@@ -7,6 +7,8 @@ RUN R -e "install.packages(c('bs4Dash', 'fresh', 'shinycssloaders', 'plotly', 'r
 RUN R -e "remotes::install_github('neilc-itv/baRb')"
 RUN R -e "remotes::install_github('neilc-itv/itvPalette')"
 
+COPY shiny-customised.config /etc/shiny-server/shiny-server.conf
+
 EXPOSE 3838
 
 USER shiny
