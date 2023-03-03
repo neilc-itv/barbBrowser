@@ -1,8 +1,8 @@
 library(shiny)
-library(tidyverse)
-
-options("spinner.color" = itvPalette::itv_palette()$blue)
-source("auth/barb.R")
+# library(tidyverse)
+# 
+# options("spinner.color" = itvPalette::itv_palette()$blue)
+# source("auth/barb.R")
 
 barbBrowser <- function(...) {
   
