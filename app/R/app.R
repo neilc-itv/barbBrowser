@@ -1,3 +1,5 @@
+options(shiny.sanitize.errors = FALSE)
+
 print(1)
 
 library(shiny)
