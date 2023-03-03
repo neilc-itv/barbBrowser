@@ -1,7 +1,7 @@
 library(shiny)
 
 options("spinner.color" = itvPalette::itv_palette()$blue)
-source("auth/barb.R")
+# source("auth/barb.R")
 
 barbBrowser <- function(...) {
   # MRE for testing
