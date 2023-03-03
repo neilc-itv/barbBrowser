@@ -1,6 +1,8 @@
 library(shiny)
 library(tidyverse)
 
+options(shiny.sanitize.errors = FALSE)
+
 options("spinner.color" = itvPalette::itv_palette()$blue)
 
 getOption("spinner.color", default = "#0275D8")
