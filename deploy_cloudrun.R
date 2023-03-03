@@ -15,3 +15,4 @@ cr_run(sprintf("gcr.io/%s/barb-browser:latest",cr_project_get()),
        concurrency = 80,
        max_instances = 1)
 
+install.packages()
