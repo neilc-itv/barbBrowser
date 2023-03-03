@@ -2,7 +2,7 @@ FROM rocker/shiny
 
 COPY app /srv/shiny-server/barbBrowser
 
-EXPOSE 8080
+EXPOSE 3838
 
 USER shiny
 
