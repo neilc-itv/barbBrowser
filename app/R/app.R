@@ -5,6 +5,8 @@ options("spinner.color" = itvPalette::itv_palette()$blue)
 
 getOption("spinner.color", default = "#0275D8")
 
+source("auth/barb.R")
+
 barbBrowser <- function(...) {
   # Define UI for application that draws a histogram
   ui <- bs4Dash::dashboardPage(
