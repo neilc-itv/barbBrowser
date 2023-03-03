@@ -1,13 +1,24 @@
+print(1)
+
 library(shiny)
+
+print(2)
+
 library(tidyverse)
 
-options(shiny.sanitize.errors = FALSE)
+print(3)
 
 options("spinner.color" = itvPalette::itv_palette()$blue)
 
+print(4)
+
 getOption("spinner.color", default = "#0275D8")
 
+print(5)
+
 source("auth/barb.R")
+
+print(6)
 
 barbBrowser <- function(...) {
   # Define UI for application that draws a histogram
