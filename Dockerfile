@@ -2,6 +2,13 @@ FROM rocker/shiny
 
 COPY app /srv/shiny-server/barbBrowser
 
+RUN R -e "install.packages(c('bs4Dash', 'fresh', 'shinycssloaders'),
+                           dependencies=TRUE, 
+                           repos='http://cran.rstudio.com/')"
+
+RUN R -e "remotes::install_github('neilc-itv/baRb')"
+RUN R -e "remotes::install_github('neilc-itv/itvPalette')"
+
 EXPOSE 3838
 
 USER shiny
