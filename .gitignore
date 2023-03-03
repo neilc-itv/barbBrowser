@@ -2,5 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
-/app/auth
+/app/auth.R
 googlecloudrunner-auth-key.json
