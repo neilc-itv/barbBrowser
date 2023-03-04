@@ -30,6 +30,7 @@ barbBrowser <- function(...) {
     ),
     sidebar = bs4Dash::dashboardSidebar(disable = TRUE),
     controlbar = bs4Dash::dashboardControlbar(
+      collapsed = FALSE,
       column(
         8,
         shiny::uiOutput("advertiser_select"),
