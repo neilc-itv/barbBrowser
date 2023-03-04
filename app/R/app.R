@@ -1,7 +1,9 @@
 library(shiny)
 
 options("spinner.color" = itvPalette::itv_palette()$blue)
-source("auth.R")
+auth <- jsonlite::read_json("auth.json")
+Sys.setenv(BARB_API_USERNAME=auth$username)
+Sys.setenv(BARB_API_PASSWORD=auth$password)
 
 barbBrowser <- function(...) {
   # MRE for testing
