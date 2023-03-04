@@ -6,10 +6,9 @@ cr_deploy_docker_trigger_with_secret <- function (repo, image, trigger_name = pa
                                                   timeout = NULL, projectId_target = cr_project_get(),
                                                   buildstep_secret = NULL) 
 {
-  build_docker <- cr_build_make(cr_build_yaml(steps = c(cr_buildstep_docker(image, 
+  build_docker <- cr_build_make(cr_build_yaml(steps = c(buildstep_secret, cr_buildstep_docker(image, 
                                                                             tag = image_tag, projectId = projectId_target, ..., 
-                                                                            kaniko_cache = TRUE),
-                                              buildstep_secret), timeout = timeout))
+                                                                            kaniko_cache = TRUE)), timeout = timeout))
   safe_name <- gsub("[^a-zA-Z1-9]", "-", trigger_name)
   cr_buildtrigger(build_docker, name = safe_name, trigger = repo, 
                   description = paste0(safe_name, Sys.time()), trigger_tags = "docker-build", 

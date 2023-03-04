@@ -13,7 +13,7 @@ COPY shiny-customised.config /etc/shiny-server/shiny-server.conf
 
 COPY auth.json /srv/shiny-server/barbBrowser/auth.json
 
-EXPOSE 3838
+EXPOSE 8080
 
 USER shiny
 
