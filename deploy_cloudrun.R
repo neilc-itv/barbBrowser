@@ -29,7 +29,7 @@ cr_deploy_docker_trigger_with_secret(
 
 # deploy to Cloud Run
 cr_run(sprintf("gcr.io/%s/barb-browser:latest",cr_project_get()),
-       port = 3838,
+       port = 8080,
        name = "barb-browser",
        concurrency = 80,
        max_instances = 1)

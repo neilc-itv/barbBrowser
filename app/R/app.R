@@ -1,4 +1,5 @@
 library(shiny)
+library(magrittr)
 
 options(shiny.sanitize.errors = FALSE)
 
