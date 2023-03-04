@@ -109,10 +109,10 @@ barbBrowser <- function(...) {
           )
       })
     })
-
+    
     spots_daily <- reactive({
       req(nrow(advertiser_spots()) > 0)
-
+      
       advertiser_spots() %>%
         dplyr::mutate(date = lubridate::as_date(standard_datetime)) %>%
         dplyr::group_by(date) %>%
