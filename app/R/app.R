@@ -2,9 +2,9 @@ library(shiny)
 library(magrittr)
 library(googleAuthR)
 
-gar_set_client(
-  web_json = "client_secret.json",
-  scopes = "https://www.googleapis.com/auth/userinfo.email")
+# gar_set_client(
+#   web_json = "client_secret.json",
+#   scopes = "https://www.googleapis.com/auth/userinfo.email")
 
 # options(shiny.port = 1221)
 
