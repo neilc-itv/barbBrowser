@@ -2,10 +2,6 @@ library(shiny)
 library(magrittr)
 library(googleAuthR)
 
-gar_set_client(
-  web_json = "client_secret.json",
-  scopes = "https://www.googleapis.com/auth/userinfo.email")
-
 # options(shiny.port = 1221)
 
 options("spinner.color" = itvPalette::itv_palette()$blue)
@@ -95,6 +91,11 @@ barbBrowser <- function(...) {
   server <- function(input, output, session) {
     
     # gar_shiny_auth(session)
+    
+    gar_set_client(
+      web_json = "client_secret.json",
+      scopes = "https://www.googleapis.com/auth/userinfo.email")
+    
     
     advertisers <- baRb::barb_get_advertisers()
 
