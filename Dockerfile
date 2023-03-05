@@ -12,6 +12,7 @@ RUN R -e "remotes::install_github('neilc-itv/itvPalette')"
 COPY shiny-customised.config /etc/shiny-server/shiny-server.conf
 
 COPY auth.json /srv/shiny-server/barbBrowser/auth.json
+COPY client_secret.json /srv/shiny-server/barbBrowser/client_secret.json
 
 EXPOSE 8080
 
