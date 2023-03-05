@@ -3,4 +3,5 @@
 .RData
 .Ruserdata
 /app/auth.json
+/app/client_secret.json
 googlecloudrunner-auth-key.json

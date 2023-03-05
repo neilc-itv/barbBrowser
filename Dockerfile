@@ -4,7 +4,7 @@ COPY app/ /srv/shiny-server/barbBrowser
 
 RUN ls --recursive /srv/shiny-server/barbBrowser
 
-RUN R -e "install.packages(c('bs4Dash', 'fresh', 'shinycssloaders', 'plotly', 'remotes', 'pkgload'), repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages(c('bs4Dash', 'fresh', 'shinycssloaders', 'plotly', 'remotes', 'pkgload', 'googleAuthR'), repos='http://cran.rstudio.com/')"
 
 RUN R -e "remotes::install_github('neilc-itv/baRb')"
 RUN R -e "remotes::install_github('neilc-itv/itvPalette')"

@@ -8,7 +8,7 @@ cr_deploy_docker_trigger_with_secret <- function (repo, image, trigger_name = pa
 {
   build_docker <- cr_build_make(cr_build_yaml(steps = c(buildstep_secret, cr_buildstep_docker(image, 
                                                                             tag = image_tag, projectId = projectId_target, ..., 
-                                                                            kaniko_cache = TRUE)), timeout = timeout))
+                                                                            kaniko_cache = FALSE)), timeout = timeout))
   safe_name <- gsub("[^a-zA-Z1-9]", "-", trigger_name)
   cr_buildtrigger(build_docker, name = safe_name, trigger = repo, 
                   description = paste0(safe_name, Sys.time()), trigger_tags = "docker-build", 
@@ -24,7 +24,10 @@ cr_deploy_docker_trigger_with_secret(
   repo,
   image = "barb-browser",
   trigger_name = "docker-barb-browser",
-  buildstep_secret = cr_buildstep_secret("barb-api", decrypted = "/workspace/auth.json")
+  buildstep_secret = c(
+    cr_buildstep_secret("barb-api", decrypted = "/workspace/auth.json"),
+    cr_buildstep_secret("mit-dev-web-client", decrypted = "/workspace/client_secret.json")
+  )
 )
 
 # deploy to Cloud Run

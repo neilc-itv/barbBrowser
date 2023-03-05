@@ -1,7 +1,12 @@
 library(shiny)
 library(magrittr)
+library(googleAuthR)
 
-options(shiny.sanitize.errors = FALSE)
+gar_set_client(
+  web_json = "client_secret.json",
+  scopes = "https://www.googleapis.com/auth/userinfo.email")
+
+# options(shiny.port = 1221)
 
 options("spinner.color" = itvPalette::itv_palette()$blue)
 auth <- jsonlite::read_json("auth.json")
@@ -61,34 +66,36 @@ barbBrowser <- function(...) {
       }"
         )
       )),
-      fluidRow(column(6, fluidRow(
+      fluidRow(column(3, 
+        bs4Dash::valueBoxOutput("advertiser_info", width = 12)
+      ),
+      column(3,
+        bs4Dash::valueBoxOutput("date_info",
+                                width = 12)
+      ),
+      column(3,
         bs4Dash::valueBoxOutput("spot_count_info",
                                 width = 12)
-      )),
-      column(6,
-             fluidRow(
-               bs4Dash::valueBoxOutput("impacts_info",
+      ),
+      column(3,
+        bs4Dash::valueBoxOutput("impacts_info",
                                        width = 12)
-             ))),
+      )),
       fluidRow(
         bs4Dash::box(
           width = 12,
           headerBorder = FALSE,
           shinycssloaders::withSpinner(plotly::plotlyOutput("daily_impacts_chart"))
         )
-      )
-
-
-
-
-
-
-    ),
+  )),
     title = "BARB Browser"
   )
 
   # Define server logic required to draw a histogram
-  server <- function(input, output) {
+  server <- function(input, output, session) {
+    
+    gar_shiny_auth(session)
+    
     advertisers <- baRb::barb_get_advertisers()
 
     output$advertiser_select <- shiny::renderUI({
@@ -130,26 +137,44 @@ barbBrowser <- function(...) {
     })
 
 
-    output$spot_count_info <- renderUI({
+    output$advertiser_info <- bs4Dash::renderValueBox({
+      bs4Dash::valueBox(
+        subtitle = "Advertiser",
+        value = input$uiSelectAdvertiser,
+        icon = shiny::icon("briefcase"),
+        color = "gray"
+      )
+    })
+    
+    output$date_info <- bs4Dash::renderValueBox({
+      bs4Dash::valueBox(
+        subtitle = "Date Range",
+        value = glue::glue('{input$uiDateRange[1]} to {input$uiDateRange[2]}'),
+        icon = shiny::icon("calendar"),
+        color = "gray"
+      )
+    })
+    
+    output$spot_count_info <- bs4Dash::renderValueBox({
       bs4Dash::valueBox(
         subtitle = "Spot Count",
         value = nrow(advertiser_spots()),
         icon = shiny::icon("calculator"),
-        color = "primary"
+        color = "gray"
       )
     })
 
-    output$impacts_info <- renderUI({
+    output$impacts_info <- bs4Dash::renderValueBox({
       bs4Dash::valueBox(
         subtitle = "Adult Impacts",
         value = sum(advertiser_spots()$`All Adults`, na.rm = TRUE),
         icon = shiny::icon("chart-simple"),
-        color = "secondary"
+        color = "gray"
       )
     })
 
 
   }
-
-  shinyApp(ui, server, ...)
+  
+  shinyApp(gar_shiny_ui(ui, login_ui = gar_shiny_login_ui), server)
 }
