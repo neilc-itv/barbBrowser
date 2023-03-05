@@ -94,7 +94,7 @@ barbBrowser <- function(...) {
   # Define server logic required to draw a histogram
   server <- function(input, output, session) {
     
-    gar_shiny_auth(session)
+    # gar_shiny_auth(session)
     
     advertisers <- baRb::barb_get_advertisers()
 
@@ -176,5 +176,6 @@ barbBrowser <- function(...) {
 
   }
   
-  shinyApp(gar_shiny_ui(ui, login_ui = gar_shiny_login_ui), server)
+  # shinyApp(gar_shiny_ui(ui, login_ui = gar_shiny_login_ui), server)
+  shinyApp(ui, server)
 }
