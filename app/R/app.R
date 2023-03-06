@@ -46,7 +46,7 @@ barbBrowser <- function(...) {
           "uiDateRange",
           "Select Date Range",
           "2023-01-01",
-          "2022-01-31"
+          "2023-01-31"
         ),
         shiny::actionButton("uiGetSpots", "Get Spots")
       )
