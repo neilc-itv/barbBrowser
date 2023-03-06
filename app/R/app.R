@@ -2,7 +2,7 @@ library(shiny)
 library(magrittr)
 library(googleAuthR)
 
-options(googleAuthR.redirect = "https://barb-browser-v2mof5dnmq-nw.a.run.app/barbBrowser/")
+options(googleAuthR.redirect = "https://barb-browser-v2mof5dnmq-nw.a.run.app")
 
 gar_set_client(
   web_json = "client_secret.json",
