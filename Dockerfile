@@ -2,7 +2,7 @@ FROM rocker/shiny-verse
 
 COPY app/ /srv/shiny-server
 
-RUN R -e "install.packages(c('bs4Dash', 'fresh', 'shinycssloaders', 'plotly', 'remotes', 'pkgload', 'googleAuthR', 'glue'), repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages(c('bs4Dash', 'fresh', 'shinycssloaders', 'plotly', 'remotes', 'pkgload', 'googleAuthR', 'glue', 'gtrendsR'), repos='http://cran.rstudio.com/')"
 
 RUN R -e "remotes::install_github('neilc-itv/baRb')"
 RUN R -e "remotes::install_github('neilc-itv/itvPalette')"

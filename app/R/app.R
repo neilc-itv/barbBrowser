@@ -44,11 +44,14 @@ barbBrowser <- function(...) {
         shiny::uiOutput("advertiser_select"),
         shiny::dateRangeInput(
           "uiDateRange",
-          "Select Date Range",
+          "Date Range",
           "2023-01-01",
           "2023-01-31"
         ),
-        shiny::actionButton("uiGetSpots", "Get Spots")
+        shiny::actionButton("uiGetSpots", "Get Spots"),
+        hr(),
+        shiny::textInput("uiTrendsTerm", "Google Trends Search Term"),
+        shiny::actionButton("uiGetTrends", "Get Trends"),
       )
     ),
     dark = NULL,
@@ -85,10 +88,26 @@ barbBrowser <- function(...) {
                                        width = 12)
       )),
       fluidRow(
-        bs4Dash::box(
+        bs4Dash::bs4TabCard(
           width = 12,
-          headerBorder = FALSE,
-          shinycssloaders::withSpinner(plotly::plotlyOutput("daily_impacts_chart"))
+          tabPanel(
+              'Daily Impacts',
+                width = 12,
+                headerBorder = FALSE,
+                shinycssloaders::withSpinner(plotly::plotlyOutput("daily_impacts_chart"))
+          ),
+          tabPanel(
+            'Sales Houses',
+            width = 12,
+            headerBorder = FALSE,
+            shinycssloaders::withSpinner(plotly::plotlyOutput("sales_house_chart"))
+          ),
+          tabPanel(
+            'Stations',
+            width = 12,
+            headerBorder = FALSE,
+            shinycssloaders::withSpinner(plotly::plotlyOutput("stations_chart"))
+          )
         )
   )),
     title = "BARB Browser"
@@ -102,7 +121,7 @@ barbBrowser <- function(...) {
     advertisers <- baRb::barb_get_advertisers()
 
     output$advertiser_select <- shiny::renderUI({
-      shiny::selectInput("uiSelectAdvertiser", "Select Advertiser", advertisers)
+      shiny::selectInput("uiSelectAdvertiser", "Advertiser", advertisers)
     })
 
     advertiser_spots <- reactive({
@@ -123,23 +142,91 @@ barbBrowser <- function(...) {
     spots_daily <- reactive({
       req(nrow(advertiser_spots()) > 0)
       
-      advertiser_spots() %>%
-        dplyr::mutate(date = lubridate::as_date(standard_datetime)) %>%
-        dplyr::group_by(date) %>%
-        dplyr::summarise(impacts = sum(`All Adults`, na.rm = TRUE))
+      test <- advertiser_spots() |>
+        dplyr::mutate(date = lubridate::as_date(standard_datetime)) |> 
+        dplyr::group_by(date) |> 
+        dplyr::summarise(impacts = sum(`all_adults`, na.rm = TRUE))
     })
 
     output$daily_impacts_chart <- plotly::renderPlotly({
-      spots_daily() %>%
-        plotly::plot_ly() %>%
+    
+      req(spots_daily())
+    
+      plot <- spots_daily() |> 
+        plotly::plot_ly() |> 
         plotly::add_bars(
           x = ~ date,
           y = ~ impacts,
+          name = "Adult Impacts",
           marker = list(color = itvPalette::itv_palette()$blue)
         )
+      
+      if(!is.null(google_trends())){
+        
+        trends <- google_trends()
+        
+        plot <- plot |> 
+          plotly::add_lines(data = trends,
+                            x = ~date,
+                            y = ~hits,
+                            yaxis = "y2",
+                            name = "Google Trends",
+                            line = list(color = "#a90061"))  |> 
+          plotly::layout(yaxis2 = list(overlaying = "y", side = "right"))
+      }
+      
+      plot
+      
     })
 
-
+    output$sales_house_chart <- plotly::renderPlotly({
+      
+      req(advertiser_spots())
+      
+      plot <- advertiser_spots() |>
+        dplyr::group_by(sales_house_name) |>
+        dplyr::summarise(all_adults = sum(all_adults)) |> 
+        dplyr::arrange(all_adults) |>
+        dplyr::mutate(sales_house_name = forcats::fct_inorder(sales_house_name)) |> 
+        plotly::plot_ly() |> 
+          plotly::add_bars(
+            x = ~ all_adults,
+            y = ~ sales_house_name,
+            name = "Adult Impacts",
+            marker = list(color = itvPalette::itv_palette()$blue)
+          ) |> 
+        plotly::layout(
+          yaxis = list(title = "")
+        )
+      
+      plot
+      
+    })
+    
+    output$stations_chart <- plotly::renderPlotly({
+      
+      req(advertiser_spots())
+      
+      plot <- advertiser_spots() |>
+        dplyr::group_by(station_name) |>
+        dplyr::summarise(all_adults = sum(all_adults)) |> 
+        dplyr::arrange(all_adults) |>
+        dplyr::mutate(station_name = forcats::fct_inorder(station_name)) |> 
+        plotly::plot_ly() |> 
+        plotly::add_bars(
+          x = ~ all_adults,
+          y = ~ station_name,
+          name = "Adult Impacts",
+          marker = list(color = itvPalette::itv_palette()$blue)
+        ) |> 
+        plotly::layout(
+          yaxis = list(title = "")
+        )
+      
+      plot
+      
+    })
+    
     output$advertiser_info <- bs4Dash::renderValueBox({
       bs4Dash::valueBox(
         subtitle = "Advertiser",
@@ -170,15 +257,29 @@ barbBrowser <- function(...) {
     output$impacts_info <- bs4Dash::renderValueBox({
       bs4Dash::valueBox(
         subtitle = "Adult Impacts",
-        value = sum(advertiser_spots()$`All Adults`, na.rm = TRUE),
+        value = sum(advertiser_spots()$`all_adults`, na.rm = TRUE),
         icon = shiny::icon("chart-simple"),
         color = "gray"
       )
+    })
+    
+    google_trends <- reactive({
+      input$uiGetTrends
+      
+      search_term <- isolate(input$uiTrendsTerm)
+      
+      if(search_term=="") return(NULL)
+      
+      trends <- gtrendsR::gtrends(search_term,
+                                  geo = "GB",
+                                  glue::glue("{isolate(input$uiDateRange[1])} {isolate(input$uiDateRange[2])}"))
+      
+      trends$interest_over_time
     })
 
 
   }
   
-  shinyApp(gar_shiny_ui(ui, login_ui = gar_shiny_login_ui), server)
-  # shinyApp(ui, server)
+  # shinyApp(gar_shiny_ui(ui, login_ui = gar_shiny_login_ui), server)
+  shinyApp(ui, server)
 }
