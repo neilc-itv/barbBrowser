@@ -185,7 +185,7 @@ barbBrowser <- function(...) {
       
       plot <- advertiser_spots() |>
         dplyr::group_by(sales_house_name) |>
-        dplyr::summarise(all_adults = sum(all_adults)) |> 
+        dplyr::summarise(all_adults = sum(all_adults, na.rm = TRUE)) |> 
         dplyr::arrange(all_adults) |>
         dplyr::mutate(sales_house_name = forcats::fct_inorder(sales_house_name)) |> 
         plotly::plot_ly() |> 
@@ -209,7 +209,7 @@ barbBrowser <- function(...) {
       
       plot <- advertiser_spots() |>
         dplyr::group_by(station_name) |>
-        dplyr::summarise(all_adults = sum(all_adults)) |> 
+        dplyr::summarise(all_adults = sum(all_adults, na.rm = TRUE)) |> 
         dplyr::arrange(all_adults) |>
         dplyr::mutate(station_name = forcats::fct_inorder(station_name)) |> 
         plotly::plot_ly() |> 
