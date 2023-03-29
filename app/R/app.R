@@ -101,14 +101,7 @@ barbBrowser <- function(...) {
             width = 12,
             headerBorder = FALSE,
             shinycssloaders::withSpinner(plotly::plotlyOutput("sales_house_chart"))
-          ),
-          tabPanel(
-            'Stations',
-            width = 12,
-            headerBorder = FALSE,
-            shinycssloaders::withSpinner(plotly::plotlyOutput("stations_chart"))
-          )
-        )
+          ))
   )),
     title = "BARB Browser"
   )
@@ -121,7 +114,7 @@ barbBrowser <- function(...) {
     advertisers <- baRb::barb_get_advertisers()
 
     output$advertiser_select <- shiny::renderUI({
-      shiny::selectInput("uiSelectAdvertiser", "Advertiser", advertisers)
+      shiny::selectizeInput("uiSelectAdvertiser", label = "Advertiser", choices = advertisers, multiple = FALSE)
     })
 
     advertiser_spots <- reactive({
@@ -195,30 +188,6 @@ barbBrowser <- function(...) {
             name = "Adult Impacts",
             marker = list(color = itvPalette::itv_palette()$blue)
           ) |> 
-        plotly::layout(
-          yaxis = list(title = "")
-        )
-      
-      plot
-      
-    })
-    
-    output$stations_chart <- plotly::renderPlotly({
-      
-      req(advertiser_spots())
-      
-      plot <- advertiser_spots() |>
-        dplyr::group_by(station_name) |>
-        dplyr::summarise(all_adults = sum(all_adults, na.rm = TRUE)) |> 
-        dplyr::arrange(all_adults) |>
-        dplyr::mutate(station_name = forcats::fct_inorder(station_name)) |> 
-        plotly::plot_ly() |> 
-        plotly::add_bars(
-          x = ~ all_adults,
-          y = ~ station_name,
-          name = "Adult Impacts",
-          marker = list(color = itvPalette::itv_palette()$blue)
-        ) |> 
         plotly::layout(
           yaxis = list(title = "")
         )
