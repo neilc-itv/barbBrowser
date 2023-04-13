@@ -255,6 +255,6 @@ barbBrowser <- function(...) {
 
   }
   
-  # shinyApp(gar_shiny_ui(ui, login_ui = gar_shiny_login_ui), server)
-  shinyApp(ui, server)
+  shinyApp(gar_shiny_ui(ui, login_ui = gar_shiny_login_ui), server)
+  # shinyApp(ui, server)
 }
