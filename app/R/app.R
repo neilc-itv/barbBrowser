@@ -133,6 +133,8 @@ barbBrowser <- function(...) {
         shiny::validate(
           need(nrow(spots) > 0, "No spots returned for the requested time range and advertiser")
         )
+        
+        spots
       })
     })
     
@@ -253,6 +255,6 @@ barbBrowser <- function(...) {
 
   }
   
-  shinyApp(gar_shiny_ui(ui, login_ui = gar_shiny_login_ui), server)
-  # shinyApp(ui, server)
+  # shinyApp(gar_shiny_ui(ui, login_ui = gar_shiny_login_ui), server)
+  shinyApp(ui, server)
 }
