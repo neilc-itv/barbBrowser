@@ -129,6 +129,10 @@ barbBrowser <- function(...) {
             max_transmission_date = input$uiDateRange[2],
             advertiser_name = input$uiSelectAdvertiser
           )
+        
+        shiny::validate(
+          need(nrow(spots) > 0, "No spots returned for the requested time range and advertiser")
+        )
       })
     })
     
