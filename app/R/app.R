@@ -101,6 +101,12 @@ barbBrowser <- function(...) {
             width = 12,
             headerBorder = FALSE,
             shinycssloaders::withSpinner(plotly::plotlyOutput("sales_house_chart"))
+          ),
+          tabPanel(
+            'Regions',
+            width = 12,
+            headerBorder = FALSE,
+            shinycssloaders::withSpinner(plotly::plotlyOutput("region_chart"))
           ))
   )),
     title = "BARB Browser"
@@ -201,6 +207,31 @@ barbBrowser <- function(...) {
       plot
       
     })
+    
+    output$region_chart <- plotly::renderPlotly({
+      
+      req(advertiser_spots())
+      
+      plot <- advertiser_spots() |>
+        dplyr::group_by(panel_region) |>
+        dplyr::summarise(all_adults = sum(all_adults, na.rm = TRUE)) |> 
+        dplyr::arrange(all_adults) |>
+        dplyr::mutate(panel_region = forcats::fct_inorder(panel_region)) |> 
+        plotly::plot_ly() |> 
+        plotly::add_bars(
+          x = ~ all_adults,
+          y = ~ panel_region,
+          name = "Adult Impacts",
+          marker = list(color = itvPalette::itv_palette()$blue)
+        ) |> 
+        plotly::layout(
+          yaxis = list(title = "")
+        )
+      
+      plot
+      
+    })
+    
     
     output$advertiser_info <- bs4Dash::renderValueBox({
       bs4Dash::valueBox(

@@ -1,4 +1,4 @@
-login_screen <- function(req, title = "Adlabs BARB Spot Browser") {
+login_screen <- function(req, title = "Adlabs Login") {
   shiny::addResourcePath("img", system.file("img", package = "googleAuthR"))
   shiny::addResourcePath("css", system.file("css", package = "googleAuthR"))
   shiny::fillPage(
