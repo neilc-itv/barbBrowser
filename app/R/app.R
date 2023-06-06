@@ -52,6 +52,8 @@ barbBrowser <- function(...) {
         hr(),
         shiny::textInput("uiTrendsTerm", "Google Trends Search Term"),
         shiny::actionButton("uiGetTrends", "Get Trends"),
+        hr(),
+        shiny::radioButtons("uiRollup", "Granularity", c("Daily" = "day", "Weekly" = "week"))
       )
     ),
     dark = NULL,
@@ -144,20 +146,21 @@ barbBrowser <- function(...) {
       })
     })
     
-    spots_daily <- reactive({
+    spots_rollup <- reactive({
       req(nrow(advertiser_spots()) > 0)
       
       test <- advertiser_spots() |>
         dplyr::mutate(date = lubridate::as_date(standard_datetime)) |> 
+        dplyr::mutate(date = lubridate::floor_date(date, input$uiRollup)) |> 
         dplyr::group_by(date) |> 
         dplyr::summarise(impacts = sum(`all_adults`, na.rm = TRUE))
     })
 
     output$daily_impacts_chart <- plotly::renderPlotly({
     
-      req(spots_daily())
+      req(spots_rollup())
     
-      plot <- spots_daily() |> 
+      plot <- spots_rollup() |> 
         plotly::plot_ly() |> 
         plotly::add_bars(
           x = ~ date,
@@ -280,7 +283,10 @@ barbBrowser <- function(...) {
                                   geo = "GB",
                                   glue::glue("{isolate(input$uiDateRange[1])} {isolate(input$uiDateRange[2])}"))
       
-      trends$interest_over_time
+      trends$interest_over_time |> 
+        dplyr::mutate(date = lubridate::floor_date(date, input$uiRollup)) |> 
+        dplyr::group_by(date) |> 
+        dplyr::summarise(hits = mean(hits))
     })
 
 
