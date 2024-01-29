@@ -4,17 +4,17 @@ library(googleAuthR)
 
 options(googleAuthR.redirect = "https://barb-browser-v2mof5dnmq-nw.a.run.app")
 
-gar_set_client(
-  web_json = "client_secret.json",
-  scopes = "https://www.googleapis.com/auth/userinfo.email",
-  activate = "web")
+# gar_set_client(
+#   web_json = "client_secret.json",
+#   scopes = "https://www.googleapis.com/auth/userinfo.email",
+#   activate = "web")
 
 # options(shiny.port = 1221)
 
 options("spinner.color" = itvPalette::itv_palette()$blue)
-auth <- jsonlite::read_json("auth.json")
-Sys.setenv(BARB_API_USERNAME=auth$username)
-Sys.setenv(BARB_API_PASSWORD=auth$password)
+# auth <- jsonlite::read_json("auth.json")
+# Sys.setenv(BARB_API_USERNAME=auth$username)
+# Sys.setenv(BARB_API_PASSWORD=auth$password)
 
 barbBrowser <- function(...) {
   # MRE for testing
@@ -45,8 +45,8 @@ barbBrowser <- function(...) {
         shiny::dateRangeInput(
           "uiDateRange",
           "Date Range",
-          "2023-01-01",
-          "2023-01-31"
+          lubridate::today()-24,
+          lubridate::today()-10
         ),
         shiny::actionButton("uiGetSpots", "Get Spots"),
         hr(),
@@ -130,7 +130,7 @@ barbBrowser <- function(...) {
 
       isolate({
         req(input$uiSelectAdvertiser)
-
+        
         spots <-
           baRb::barb_get_spots(
             min_transmission_date = input$uiDateRange[1],
@@ -275,6 +275,8 @@ barbBrowser <- function(...) {
     google_trends <- reactive({
       input$uiGetTrends
       
+      browser()
+      
       search_term <- isolate(input$uiTrendsTerm)
       
       if(search_term=="") return(NULL)
@@ -292,6 +294,6 @@ barbBrowser <- function(...) {
 
   }
   
-  shinyApp(gar_shiny_ui(ui, login_ui = login_screen), server)
-  # shinyApp(ui, server)
+  # shinyApp(gar_shiny_ui(ui, login_ui = login_screen), server)
+  shinyApp(ui, server)
 }
