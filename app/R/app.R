@@ -4,17 +4,17 @@ library(googleAuthR)
 
 options(googleAuthR.redirect = "https://barb-browser-v2mof5dnmq-nw.a.run.app")
 
-# gar_set_client(
-#   web_json = "client_secret.json",
-#   scopes = "https://www.googleapis.com/auth/userinfo.email",
-#   activate = "web")
+gar_set_client(
+  web_json = "client_secret.json",
+  scopes = "https://www.googleapis.com/auth/userinfo.email",
+  activate = "web")
 
 # options(shiny.port = 1221)
 
 options("spinner.color" = itvPalette::itv_palette()$blue)
-# auth <- jsonlite::read_json("auth.json")
-# Sys.setenv(BARB_API_USERNAME=auth$username)
-# Sys.setenv(BARB_API_PASSWORD=auth$password)
+auth <- jsonlite::read_json("auth.json")
+Sys.setenv(BARB_API_USERNAME=auth$username)
+Sys.setenv(BARB_API_PASSWORD=auth$password)
 
 barbBrowser <- function(...) {
   # MRE for testing
@@ -294,6 +294,6 @@ barbBrowser <- function(...) {
 
   }
   
-  # shinyApp(gar_shiny_ui(ui, login_ui = login_screen), server)
-  shinyApp(ui, server)
+  shinyApp(gar_shiny_ui(ui, login_ui = login_screen), server)
+  # shinyApp(ui, server)
 }
