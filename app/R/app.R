@@ -45,8 +45,8 @@ barbBrowser <- function(...) {
         shiny::dateRangeInput(
           "uiDateRange",
           "Date Range",
-          "2023-01-01",
-          "2023-01-31"
+          lubridate::today()-24,
+          lubridate::today()-10
         ),
         shiny::actionButton("uiGetSpots", "Get Spots"),
         hr(),
@@ -130,7 +130,7 @@ barbBrowser <- function(...) {
 
       isolate({
         req(input$uiSelectAdvertiser)
-
+        
         spots <-
           baRb::barb_get_spots(
             min_transmission_date = input$uiDateRange[1],
@@ -274,6 +274,8 @@ barbBrowser <- function(...) {
     
     google_trends <- reactive({
       input$uiGetTrends
+      
+      browser()
       
       search_term <- isolate(input$uiTrendsTerm)
       
