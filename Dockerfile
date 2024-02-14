@@ -4,6 +4,8 @@ COPY app/ /srv/shiny-server
 
 RUN R -e "install.packages(c('bs4Dash', 'fresh', 'shinycssloaders', 'plotly', 'remotes', 'pkgload', 'googleAuthR', 'glue', 'gtrendsR'), repos='http://cran.rstudio.com/')"
 
+RUN R -e "remotes::install_github('ebenmichael/augsynth')"
+RUN R -e "remotes::install_github('facebookincubator/GeoLift')"
 RUN R -e "remotes::install_github('itv/baRb')"
 RUN R -e "remotes::install_github('neilc-itv/geoxR')"
 RUN R -e "remotes::install_github('neilc-itv/itvPalette')"
