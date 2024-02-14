@@ -2,7 +2,7 @@ FROM rocker/shiny-verse
 
 COPY app/ /srv/shiny-server
 
-RUN R -e "install.packages(c('thematic', 'bslib', bs4Dash', 'fresh', 'shinycssloaders', 'plotly', 'remotes', 'pkgload', 'googleAuthR', 'glue', 'gtrendsR'), repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages(c('thematic', 'bslib', 'bs4Dash', 'fresh', 'shinycssloaders', 'plotly', 'remotes', 'pkgload', 'googleAuthR', 'glue', 'gtrendsR'), repos='http://cran.rstudio.com/')"
 
 RUN R -e "remotes::install_github('ebenmichael/augsynth')"
 RUN R -e "remotes::install_github('facebookincubator/GeoLift')"
