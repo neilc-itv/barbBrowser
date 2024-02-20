@@ -86,7 +86,13 @@ barbBrowser <- function(...) {
     # ),
     
     bslib::page_sidebar(
-      title = "Self-Serve GeoX",
+      title = div(img(
+        src = "https://storage.googleapis.com/itv-logos/itv_background_crop.jpg",
+        height = 20,
+        width = 20,
+        style = "margin:1px 1px"
+      ), "Self-Serve GeoX"),
+      
       sidebar = bslib::sidebar(
         title = "Connect Google Analytics",
         dateRangeInput("uiDateRange", "Date range including pre-test period", start = lubridate::today() - 40, end = lubridate::today() - 10),
