@@ -2,9 +2,10 @@ library(shiny)
 library(magrittr)
 library(googleAuthR)
 library(geoxR)
+library(waiter)
 
-options(googleAuthR.redirect = "https://barb-browser-v2mof5dnmq-nw.a.run.app")
-# options(googleAuthR.redirect = "http://localhost:1221")
+# options(googleAuthR.redirect = "https://barb-browser-v2mof5dnmq-nw.a.run.app")
+options(googleAuthR.redirect = "http://localhost:1221")
 
 gar_set_client(
   web_json = "client_secret.json",
@@ -30,17 +31,12 @@ region_list <- geoxR::city_macro_lookup |>
 
 
 barbBrowser <- function(...) {
-  # MRE for testing
-  # library(shiny)
-  # ui <- fluidPage(
-  #   "Hello, world!"
-  # )
-  # server <- function(input, output, session) {
-  # }
-  # shinyApp(ui, server)
-  
+
   # Define UI for application that draws a histogram
   ui <- bslib::page_fluid(
+    
+    use_waiter(),
+    waiter_on_busy(),
     
     title = "GeoX Self-Service",
     
@@ -64,51 +60,102 @@ barbBrowser <- function(...) {
       bg = "#fff"
     ),
     
-    
-    # controlbar = bs4Dash::dashboardControlbar(
-    #   collapsed = FALSE,
-    #   column(
-    #     8,
-    #     shiny::uiOutput("advertiser_select"),
-    #     shiny::dateRangeInput(
-    #       "uiDateRange",
-    #       "Date Range",
-    #       lubridate::today()-24,
-    #       lubridate::today()-10
-    #     ),
-    #     shiny::actionButton("uiGetSpots", "Get Spots"),
-    #     hr(),
-    #     shiny::textInput("uiTrendsTerm", "Google Trends Search Term"),
-    #     shiny::actionButton("uiGetTrends", "Get Trends"),
-    #     hr(),
-    #     shiny::radioButtons("uiRollup", "Granularity", c("Daily" = "day", "Weekly" = "week"))
-    #   )
-    # ),
+    div(img(
+      src = "https://storage.googleapis.com/itv-logos/itv_background_crop.jpg",
+      width = "100%",
+      height = "100px",
+      style = "margin:1px 1px; object-fit:cover; object-position:top",
+    )),
     
     bslib::page_sidebar(
-      title = div(img(
-        src = "https://storage.googleapis.com/itv-logos/itv_background_crop.jpg",
-        height = 20,
-        width = 20,
-        style = "margin:1px 1px"
-      ), "Self-Serve GeoX"),
+      title = "Self-Serve GeoX",
+      
+      header = imageOutput(
+        "https://storage.googleapis.com/itv-logos/itv_background_crop.jpg"
+        ),
       
       sidebar = bslib::sidebar(
-        title = "Connect Google Analytics",
+        title = "Data Connections",
+        width = 400,
         dateRangeInput("uiDateRange", "Date range including pre-test period", start = lubridate::today() - 40, end = lubridate::today() - 10),
-        googleAnalyticsR::accountPickerUI("auth_menu", inColumns = TRUE),
-        actionButton("getGA4", "Get Traffic")
+        
+        bslib::navset_card_tab(
+          bslib::nav_panel(
+            title = "Google Analytics",
+            uiOutput("traffic_filter"),
+            googleAnalyticsR::accountPickerUI("auth_menu", inColumns = TRUE),
+            actionButton("getGA4", "Get Traffic"),
+            span(textOutput("confirm_ga"), style="color:green"),
+            hr()
+          ),
+          bslib::nav_panel(
+            title = "BARB",
+            shiny::uiOutput("advertiser_select"),
+            actionButton("getSpots", "Get Spots"),
+            br(),br(),
+            span(textOutput("confirm_spots"), style="color:green"),
+            hr()
+          )
+        )
       ),
       
-      bslib::layout_columns(
-        col_widths = c(8,4),
+      bslib::navset_card_pill(
+        title = "GeoX Modelling",
+        bslib::nav_panel(
+          title = "Data Investigation",
         bslib::navset_card_tab(
-          title = "GeoX Modelling",
+          title = NULL,
+          bslib::nav_panel(
+            "Traffic Source Summary",
+            bslib::layout_columns(
+              col_widths= c(8,4),
+            plotly::plotlyOutput("traffic_summary_plot"),
+            div(
+              p("Use traffic sources to understand which filtered sources may be worth running in addition to analysing all traffic."),
+               p("Organic Search and Direct traffic sources tend to be particularly responsive to TV and can be useful when uplifts are more difficult to detect.")
+            )
+            )
+            
+          ),
           bslib::nav_panel(
             "Traffic Plot",
-            plotly::plotlyOutput("traffic_plot")
-
-          ),
+            bslib::layout_columns(
+              col_widths= c(8,4),
+              plotly::plotlyOutput("traffic_plot"),
+              p()
+          )),
+          bslib::nav_panel(
+            title = "Impacts Time Series",
+            bslib::layout_columns(
+              col_widths= c(8,4),
+              plotly::plotlyOutput("daily_impacts_chart"),
+              p("Verify that campaign start and end dates and daily Adult impacts look as expected.")
+          )),
+          bslib::nav_panel(
+            title = "Impacts Sales Houses and Regionality",
+            bslib::layout_columns(
+              col_widths= c(4,4,4),
+              plotly::plotlyOutput("region_chart"),
+              plotly::plotlyOutput("sales_house_chart"),
+              p("Verify that active regions are as briefed and that there is not additional activity running in addition to regionalised ITV1")
+            )),
+          bslib::nav_panel(
+            title = "Largest Spots",
+            bslib::layout_columns(
+              col_widths= c(8,4),
+              DT::dataTableOutput("spots_summary_table"),
+              div(
+                p("Visualising minute-by-minute traffic around large spots is useful to check that the advert is working to prompt web visits in the very short term."),
+                p("Lack of minute-by-minute response can be a sign that the advert has not communicated an online destination and may explain low response in the GeoX test itself if strong uplifts are not measured."),
+                p("Click on a spot to see minute-by-minute traffic on that day."),
+                actionButton("ui_show_minute_chart", "Show Traffic on Selected Day")
+              )
+            )))),
+          bslib::nav_panel(
+            title = "Uplift Calculation",
+            bslib::navset_card_tab(
+              title = NULL,
+            
           bslib::nav_panel(
             "Test Setup",
             dateInput("uiTestStartDate", "Test start date", value = lubridate::today() - 20),
@@ -118,62 +165,27 @@ barbBrowser <- function(...) {
           ),
           bslib::nav_panel(
             "Test vs. Control",
-            plotly::plotlyOutput("geolift_test_control")
-          ),
+            bslib::layout_columns(
+              col_widths= c(8,4),
+              plotly::plotlyOutput("geolift_test_control"),
+              p()
+          )),
           bslib::nav_panel(
             "Incremental Uplift",
-            plotly::plotlyOutput("geolift_att")
-          )),
+            bslib::layout_columns(
+              col_widths= c(8,4),
+              plotly::plotlyOutput("geolift_att"),
+              p()
+          ))),
         bslib::layout_columns(
-          col_widths = 12,
+          col_widths = c(4,4,4),
           uiOutput("att_value"),
           uiOutput("percent_uplift_value"),
           uiOutput("confidence_value")
         )
-      )
-      
-    ),
+    )))
     
-    bslib::card(
-      # -----------------
-      
-      # fluidRow(column(3, 
-      #   bs4Dash::valueBoxOutput("advertiser_info", width = 12)
-      # ),
-      # column(3,
-      #   bs4Dash::valueBoxOutput("date_info",
-      #                           width = 12)
-      # ),
-      # column(3,
-      #   bs4Dash::valueBoxOutput("spot_count_info",
-      #                           width = 12)
-      # ),
-      # column(3,
-      #   bs4Dash::valueBoxOutput("impacts_info",
-      #                                  width = 12)
-      # )),
-      # fluidRow(
-      #   bs4Dash::bs4TabCard(
-      #     width = 12,
-      #     tabPanel(
-      #         'Daily Impacts',
-      #           width = 12,
-      #           headerBorder = FALSE,
-      #           shinycssloaders::withSpinner(plotly::plotlyOutput("daily_impacts_chart"))
-      #     ),
-      #     tabPanel(
-      #       'Sales Houses',
-      #       width = 12,
-      #       headerBorder = FALSE,
-      #       shinycssloaders::withSpinner(plotly::plotlyOutput("sales_house_chart"))
-      #     ),
-      #     tabPanel(
-      #       'Regions',
-      #       width = 12,
-      #       headerBorder = FALSE,
-      #       shinycssloaders::withSpinner(plotly::plotlyOutput("region_chart"))
-      #     ))
-  ))
+)
 
   # Define server logic required to draw a histogram
   server <- function(input, output, session) {
@@ -200,15 +212,30 @@ barbBrowser <- function(...) {
         dplyr::pull(propertyId)
     })
     
+    output$traffic_filter <- renderUI({
+      selectInput("uiTrafficFilter", "Traffic Filter", c("NO FILTER", "Paid Search", "Organic Search", "Paid Social", "Direct"))
+    })
+    
     ga4_traffic <- shiny::eventReactive(input$getGA4, {
       
-      withProgress(message = 'Getting web traffic', value = 0.5, {
-        all_traffic <- ga4_query(ga_id(), input$uiDateRange[1], input$uiDateRange[2])
-        setProgress(0.9)
-      })
+      if(input$uiTrafficFilter != "NO FILTER"){
+        filter_clause <- ga_filter_channel_group(input$uiTrafficFilter)
+      } else {
+        filter_clause <- NULL
+      }
       
+      all_traffic <- ga4_query(ga_id(), input$uiDateRange[1], input$uiDateRange[2], filter_clause = filter_clause)
+
       all_traffic
     })
+    
+    ga4_traffic_source_summary <- shiny::eventReactive(input$getGA4, {
+      
+        traffic_sources <- ga4_summarise_sources(ga_id(), input$uiDateRange[1], input$uiDateRange[2])
+
+      traffic_sources
+    })
+    
     
     # END GA Auth -------------------
     
@@ -226,6 +253,8 @@ barbBrowser <- function(...) {
       
     })
     
+    # --------------- GA Traffic summaries -------------------------------------
+    
     
     output$traffic_plot <- plotly::renderPlotly({
       
@@ -238,26 +267,50 @@ barbBrowser <- function(...) {
         
     })
     
+    output$traffic_summary_plot <- plotly::renderPlotly({
+      ga4_traffic_source_summary() |> 
+        dplyr::mutate(sessionDefaultChannelGroup = forcats::fct_inorder(sessionDefaultChannelGroup)) |> 
+        plotly::plot_ly() |> 
+          plotly::add_bars(orientation = 'h', y = ~sessionDefaultChannelGroup, x = ~sessions)
+      
+    })
+    
+    output$confirm_ga <- renderText({
+      validate(need(
+        ga4_traffic(), "Select a Google Analytics account and click Get Traffic"
+      ))
+      "Google Analytics loaded"
+    })
+    
+  
+    # --------------- Geolift --------------------------------------------------  
   
     # Uplift Calculation ------------
     
     geolift <- eventReactive(input$uiCalculateGeolift, {
+      
       req(ga4_traffic())
       
-      withProgress(message = 'Calculating Geolifts', value = 0.5, {
-        geolifts <- calculate_geoLifts(
-          list("all_traffic" = ga4_traffic()),
-          test_regions = input$uiTestRegionsSelect,
-          exclude_regions = input$uiExcludedRegionsSelect,
-          test_start = input$uiTestStartDate[1],
-          test_end = input$uiDateRange[2],
-          benchmark_advertiser = input$`auth_menu-account_name`,
-          benchmark_comment = "Shiny self-serve run",
-          benchmark_schedule = NA
-        )
-        
-        setProgress(0.9)
+      validate(need(input$uiTestRegionsSelect, "Select at least one test region before running."))
+      
+      geolifts <- NULL
+      
+      try({
+          geolifts <- calculate_geoLifts(
+            list("all_traffic" = ga4_traffic()),
+            test_regions = input$uiTestRegionsSelect,
+            exclude_regions = input$uiExcludedRegionsSelect,
+            test_start = input$uiTestStartDate[1],
+            test_end = input$uiDateRange[2],
+            benchmark_advertiser = input$`auth_menu-account_name`,
+            benchmark_comment = "Shiny self-serve run",
+            benchmark_schedule = NA
+          )
       })
+      
+      shiny::validate(
+        need(!is.null(geolifts), "Geolift did not calculate successfully. Are you sure the test dates are correctly specified and your test regions have consistent data series?")
+      )
       
       geolifts
     })
@@ -296,175 +349,168 @@ barbBrowser <- function(...) {
     )
   })
   
-    advertisers <- baRb::barb_get_advertisers()
+  # --------------- BARB Spots -------------------------------------------------
+  
+  advertisers <- baRb::barb_get_advertisers()
 
-    output$advertiser_select <- shiny::renderUI({
-      shiny::selectizeInput("uiSelectAdvertiser", label = "Advertiser", choices = advertisers, multiple = FALSE)
-    })
+  output$advertiser_select <- shiny::renderUI({
+    shiny::selectInput("uiSelectAdvertiser", label = "Advertiser", choices = advertisers, multiple = FALSE, selectize = TRUE)
+  })
 
-    advertiser_spots <- reactive({
-      input$uiGetSpots
-
-      isolate({
-        req(input$uiSelectAdvertiser)
-        
-        spots <-
-          baRb::barb_get_spots(
-            min_transmission_date = input$uiDateRange[1],
-            max_transmission_date = input$uiDateRange[2],
-            advertiser_name = input$uiSelectAdvertiser
-          )
-        
-        shiny::validate(
-          need(nrow(spots) > 0, "No spots returned for the requested time range and advertiser")
-        )
-        
-        spots
-      })
-    })
+  advertiser_spots <- eventReactive(input$getSpots, {
     
-    spots_rollup <- reactive({
-      req(nrow(advertiser_spots()) > 0)
+      req(input$uiSelectAdvertiser)
       
-      test <- advertiser_spots() |>
+      spots <-
+        baRb::barb_get_spots(
+          min_transmission_date = input$uiDateRange[1],
+          max_transmission_date = input$uiDateRange[2],
+          advertiser_name = input$uiSelectAdvertiser
+        )
+
+      shiny::validate(
+        need(nrow(spots) > 0, "No spots returned for the requested time range and advertiser")
+      )
+      
+      spots
+  })
+    
+  output$confirm_spots <- renderText({
+    validate(need(
+      advertiser_spots(), "Select an advertiser and click Get Spots"
+    ))
+    "BARB Spots loaded"
+  })
+      
+    
+  spots_rollup <- reactive({
+    req(nrow(advertiser_spots()) > 0)
+    
+    advertiser_spots() |>
         dplyr::mutate(date = lubridate::as_date(standard_datetime)) |> 
-        dplyr::mutate(date = lubridate::floor_date(date, input$uiRollup)) |> 
+        dplyr::mutate(date = lubridate::floor_date(date, "day")) |> 
         dplyr::group_by(date) |> 
         dplyr::summarise(impacts = sum(`all_adults`, na.rm = TRUE))
-    })
+  })
 
-    output$daily_impacts_chart <- plotly::renderPlotly({
+  output$daily_impacts_chart <- plotly::renderPlotly({
+  
+    req(spots_rollup())
+  
+    plot <- spots_rollup() |> 
+      plotly::plot_ly() |> 
+      plotly::add_bars(
+        x = ~ date,
+        y = ~ impacts,
+        name = "Adult Impacts",
+        marker = list(color = itvPalette::itv_palette()$blue)
+      )
     
-      req(spots_rollup())
+    plot
     
-      plot <- spots_rollup() |> 
-        plotly::plot_ly() |> 
-        plotly::add_bars(
-          x = ~ date,
-          y = ~ impacts,
-          name = "Adult Impacts",
-          marker = list(color = itvPalette::itv_palette()$blue)
-        )
-      
-      if(!is.null(google_trends())){
-        
-        trends <- google_trends()
-        
-        plot <- plot |> 
-          plotly::add_lines(data = trends,
-                            x = ~date,
-                            y = ~hits,
-                            yaxis = "y2",
-                            name = "Google Trends",
-                            line = list(color = "#a90061"))  |> 
-          plotly::layout(yaxis2 = list(overlaying = "y", side = "right"))
-      }
-      
-      plot
-      
-    })
+  })
 
-    output$sales_house_chart <- plotly::renderPlotly({
-      
-      req(advertiser_spots())
-      
-      plot <- advertiser_spots() |>
-        dplyr::group_by(sales_house_name) |>
-        dplyr::summarise(all_adults = sum(all_adults, na.rm = TRUE)) |> 
-        dplyr::arrange(all_adults) |>
-        dplyr::mutate(sales_house_name = forcats::fct_inorder(sales_house_name)) |> 
-        plotly::plot_ly() |> 
-          plotly::add_bars(
-            x = ~ all_adults,
-            y = ~ sales_house_name,
-            name = "Adult Impacts",
-            marker = list(color = itvPalette::itv_palette()$blue)
-          ) |> 
-        plotly::layout(
-          yaxis = list(title = "")
-        )
-      
-      plot
-      
-    })
+  output$sales_house_chart <- plotly::renderPlotly({
     
-    output$region_chart <- plotly::renderPlotly({
-      
-      req(advertiser_spots())
-      
-      plot <- advertiser_spots() |>
-        dplyr::group_by(panel_region) |>
-        dplyr::summarise(all_adults = sum(all_adults, na.rm = TRUE)) |> 
-        dplyr::arrange(all_adults) |>
-        dplyr::mutate(panel_region = forcats::fct_inorder(panel_region)) |> 
-        plotly::plot_ly() |> 
+    req(advertiser_spots())
+    
+    plot <- advertiser_spots() |>
+      dplyr::group_by(sales_house_name) |>
+      dplyr::summarise(all_adults = sum(all_adults, na.rm = TRUE)) |> 
+      dplyr::arrange(all_adults) |>
+      dplyr::mutate(sales_house_name = forcats::fct_inorder(sales_house_name)) |> 
+      plotly::plot_ly() |> 
         plotly::add_bars(
           x = ~ all_adults,
-          y = ~ panel_region,
+          y = ~ sales_house_name,
           name = "Adult Impacts",
           marker = list(color = itvPalette::itv_palette()$blue)
         ) |> 
-        plotly::layout(
-          yaxis = list(title = "")
-        )
-      
-      plot
-      
-    })
-    
-    
-    output$advertiser_info <- bs4Dash::renderValueBox({
-      bs4Dash::valueBox(
-        subtitle = "Advertiser",
-        value = input$uiSelectAdvertiser,
-        icon = shiny::icon("briefcase"),
-        color = "gray"
+      plotly::layout(
+        yaxis = list(title = "")
       )
-    })
     
-    output$date_info <- bs4Dash::renderValueBox({
-      bs4Dash::valueBox(
-        subtitle = "Date Range",
-        value = glue::glue('{input$uiDateRange[1]} to {input$uiDateRange[2]}'),
-        icon = shiny::icon("calendar"),
-        color = "gray"
-      )
-    })
+    plot
     
-    output$spot_count_info <- bs4Dash::renderValueBox({
-      bs4Dash::valueBox(
-        subtitle = "Spot Count",
-        value = nrow(advertiser_spots()),
-        icon = shiny::icon("calculator"),
-        color = "gray"
-      )
-    })
-
-    output$impacts_info <- bs4Dash::renderValueBox({
-      bs4Dash::valueBox(
-        subtitle = "Adult Impacts",
-        value = sum(advertiser_spots()$`all_adults`, na.rm = TRUE),
-        icon = shiny::icon("chart-simple"),
-        color = "gray"
-      )
-    })
+  })
     
-    google_trends <- reactive({
-      input$uiGetTrends
-      
-      search_term <- isolate(input$uiTrendsTerm)
-      
-      if(search_term=="") return(NULL)
-      
-      trends <- gtrendsR::gtrends(search_term,
-                                  geo = "GB",
-                                  glue::glue("{isolate(input$uiDateRange[1])} {isolate(input$uiDateRange[2])}"))
-      
-      trends$interest_over_time |> 
-        dplyr::mutate(date = lubridate::floor_date(date, input$uiRollup)) |> 
-        dplyr::group_by(date) |> 
-        dplyr::summarise(hits = mean(hits))
-    })
+  output$region_chart <- plotly::renderPlotly({
+    
+    req(advertiser_spots())
+    
+    plot <- advertiser_spots() |>
+      dplyr::group_by(panel_region) |>
+      dplyr::summarise(all_adults = sum(all_adults, na.rm = TRUE)) |> 
+      dplyr::arrange(all_adults) |>
+      dplyr::mutate(panel_region = forcats::fct_inorder(panel_region)) |> 
+      plotly::plot_ly() |> 
+      plotly::add_bars(
+        x = ~ all_adults,
+        y = ~ panel_region,
+        name = "Adult Impacts",
+        marker = list(color = itvPalette::itv_palette()$blue)
+      ) |> 
+      plotly::layout(
+        yaxis = list(title = "")
+      )
+    
+    plot
+    
+  })
+  
+  spots_summary <- reactive({
+    advertiser_spots() |> 
+      dplyr::group_by(sales_house_name,
+        standard_datetime,
+        preceding_programme_name) |> 
+      dplyr::summarise(all_adults = sum(all_adults)) |> 
+      dplyr::arrange(-all_adults) |> 
+      dplyr::ungroup()
+  })
+  
+  output$spots_summary_table <- DT::renderDataTable({
+    spots_summary() |> 
+      dplyr::rename(`Sales House` = sales_house_name,
+             `Time` = standard_datetime,
+             `Preceding Programme` = preceding_programme_name,
+             Adults = all_adults) |> 
+      dplyr::mutate(Adults = Adults * 100) |> 
+      DT::datatable(
+        selection = 'single'
+      )
+  })
+  
+  # Minute level chart popup ---------------------------------------------------
+  output$minute_level_chart <- plotly::renderPlotly({
+    
+    req(input$spots_summary_table_rows_selected)
+    
+    spot <- spots_summary()[input$spots_summary_table_rows_selected,]
+    
+    # Get traffic for the selected day
+    ga_minute <- googleAnalyticsR::ga_data(ga_id(),
+                                           date_range = c(as.Date(spot$standard_datetime), as.Date(spot$standard_datetime)),
+                                           dimensions = c('date', 'hour', 'minute'),
+                                           metrics = 'sessions',
+                                           limit = -1) |> 
+      dplyr::mutate(hour_minute = glue::glue("{hour}_{minute}"))
+    
+    ga_minute |>
+      dplyr::arrange(as.numeric(hour), as.numeric(minute)) |> 
+      dplyr::mutate(hour_minute = forcats::fct_inorder(as.character(hour_minute))) |> 
+      plotly::plot_ly() |> 
+      plotly::add_bars(x = ~hour_minute, y =~ sessions)
+    
+     
+  })
+  
+  observeEvent(input$ui_show_minute_chart, {
+    showModal(
+      modalDialog(plotly::plotlyOutput("minute_level_chart"),
+                  size = "xl",
+                  easyClose = TRUE)
+    )
+  })
 
 
   }
