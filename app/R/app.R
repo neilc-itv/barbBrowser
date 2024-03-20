@@ -4,8 +4,8 @@ library(googleAuthR)
 library(geoxR)
 library(waiter)
 
-# options(googleAuthR.redirect = "https://barb-browser-v2mof5dnmq-nw.a.run.app")
-options(googleAuthR.redirect = "http://localhost:1221")
+options(googleAuthR.redirect = "https://barb-browser-v2mof5dnmq-nw.a.run.app")
+# options(googleAuthR.redirect = "http://localhost:1221")
 
 gar_set_client(
   web_json = "client_secret.json",
