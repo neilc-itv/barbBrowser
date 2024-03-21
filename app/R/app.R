@@ -122,15 +122,17 @@ barbBrowser <- function(...) {
             bslib::layout_columns(
               col_widths= c(8,4),
               plotly::plotlyOutput("traffic_plot"),
-              p()
-          )),
+              p("Check that daily traffic looks as you expect (you've connected to the right account!) and doesn't contain very large short-term spikes or missing periods.")
+              p("Missing data or sudden very low periods of traffic can be a sign that there have been issues with tagging. Large spikes may be email drops or PR events, which may cause issues if they have different impacts in different regions.")
+            )),
           bslib::nav_panel(
             title = "Impacts Time Series",
             bslib::layout_columns(
               col_widths= c(8,4),
               plotly::plotlyOutput("daily_impacts_chart"),
               p("Verify that campaign start and end dates and daily Adult impacts look as expected.")
-          )),
+              p("In particular, check the there is not additional unexpected activity running alongside the test that you are trying to measure and that there are not campaigns just before the test that you were not aware of.")
+            )),
           bslib::nav_panel(
             title = "Impacts Sales Houses and Regionality",
             bslib::layout_columns(
