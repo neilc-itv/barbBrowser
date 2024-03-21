@@ -6,9 +6,9 @@ RUN R -e "install.packages(c('thematic', 'bsicons', 'bslib', 'bs4Dash', 'fresh',
 
 RUN R -e "remotes::install_github('ebenmichael/augsynth')"
 RUN R -e "remotes::install_github('facebookincubator/GeoLift')"
+RUN R -e "remotes::install_github('neilc-itv/itvPalette')"
 RUN R -e "remotes::install_github('itv/baRb')"
 RUN R -e "remotes::install_github('neilc-itv/geoxR')"
-RUN R -e "remotes::install_github('neilc-itv/itvPalette')"
 
 COPY shiny-customised.config /etc/shiny-server/shiny-server.conf
 
