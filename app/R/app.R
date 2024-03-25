@@ -68,7 +68,7 @@ barbBrowser <- function(...) {
     )),
     
     bslib::page_sidebar(
-      title = "Self-Serve GeoX",
+      title = "Interactive GeoX",
       
       header = imageOutput(
         "https://storage.googleapis.com/itv-logos/itv_background_crop.jpg"
