@@ -38,7 +38,7 @@ barbBrowser <- function(...) {
     use_waiter(),
     waiter_on_busy(),
     
-    title = "GeoX Self-Service",
+    title = "Interactive GeoX",
     
         # href = "https://www.itvmedia.co.uk/itv-adlabs/product",
         # image = "https://storage.googleapis.com/itv-logos/adlabs.jpg"
@@ -68,7 +68,7 @@ barbBrowser <- function(...) {
     )),
     
     bslib::page_sidebar(
-      title = "Self-Serve GeoX",
+      title = "Interactive GeoX",
       
       header = imageOutput(
         "https://storage.googleapis.com/itv-logos/itv_background_crop.jpg"
